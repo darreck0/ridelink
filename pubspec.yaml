@@ -1,0 +1,34 @@
+name: ridelink_mobile
+description: RideLink Prototype 01 - group voice test over LiveKit
+publish_to: "none"
+version: 0.1.0
+
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Realtime voice (WebRTC via LiveKit)
+  # NOTE: patakbuhin ang `flutter pub outdated` — kunin ang latest 2.x
+  livekit_client: 2.10.0
+
+  # Kailangan para sa Android audio mode (communication/SCO routing).
+  # Dapat compatible sa version na ginagamit ng livekit_client —
+  # kung may version conflict, tanggalin ito at gamitin ang re-export
+  # ng livekit_client, o i-align sa version na hinihingi nito.
+  flutter_webrtc: 1.6.0
+
+  # Runtime permissions (mic, bluetooth)
+  permission_handler: ^11.3.1
+  http: ^1.6.0
+  flutter_background: ^1.3.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
