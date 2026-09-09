@@ -37,13 +37,13 @@ Ang UI ay ginawa para sa isang taong **naka-helmet, may gloves, at hindi puweden
 
 | Kulay | Kahulugan |
 |---|---|
-| 🟢 Berde | Konektado, malakas ang signal, aktibong mode |
-| 🔴 Pula | On air — naririnig ka — at disconnect |
-| 🟡 Amber | Standby, o mahina pero gumagana pa ang koneksyon |
+| 🟦 Teal | Konektado, handang magsalita, o aktibong nagta-transmit |
+| 🔴 Pula | End call, disconnected, at ibang danger state |
+| ⚪ Gray | Tahimik, naka-mute, o hindi aktibong control |
 
-Kaya kapag **may kulay ang malaking bilog, nagta-transmit ka.** Kapag wala, hindi. Hindi mo kailangang basahin ang teksto.
+Kapag **matingkad na teal at may pulse ring ang microphone button, nagta-transmit ka.** Kapag neutral gray, tahimik o naka-mute ang mic. Hindi mo kailangang basahin ang teksto para malaman ang kasalukuyang state.
 
-Ang natitirang detalye — corner brackets sa halip na buong border, tach-style na tick ring sa talk button, monospace na mga readout — ay galing sa instrument cluster ng motor.
+Ang interface ay gumagamit ng deep navy surfaces, malinaw na typography, malalaking touch target, at restrained technical details para madaling gamitin habang naka-motor nang hindi nagmumukhang gaming o hacker UI.
 
 Nasa [`lib/theme.dart`](lib/theme.dart) ang lahat ng token; nasa [`lib/widgets.dart`](lib/widgets.dart) ang mga bahagi.
 
@@ -53,7 +53,7 @@ Nasa [`lib/theme.dart`](lib/theme.dart) ang lahat ng token; nasa [`lib/widgets.d
 lib/
   main.dart      Dalawang screen (Connect, Room) at ang voice logic
   theme.dart     Design tokens — kulay, type, spacing
-  widgets.dart   HUD components — brackets, meters, PTT button
+  widgets.dart   Reusable UI components — fields, meters, mode switch, PTT button
 test/
   widget_test.dart
 docs/screenshots/

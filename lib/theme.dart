@@ -36,9 +36,50 @@ class RL {
   static const textMid = Color(0xFF8A9599);
   static const textLow = Color(0xFF4E585C);
 
+  // --- Premium voice-room palette -----------------------------------
+  // Kept separate from the prototype connect-screen tokens so the room
+  // redesign can evolve without changing the setup flow.
+  static const roomBg = Color(0xFF07111B);
+  static const roomBgDeep = Color(0xFF040B12);
+  static const roomSurface = Color(0xFF101D29);
+  static const roomSurfaceRaised = Color(0xFF162635);
+  static const roomBorder = Color(0xFF223747);
+  static const cyan = Color(0xFF35E0C1);
+  static const cyanBright = Color(0xFF65F2D7);
+  static const cyanDim = Color(0xFF123D3B);
+  static const roomText = Color(0xFFF3F7FA);
+  static const roomTextMid = Color(0xFFA7B5C1);
+  static const roomTextLow = Color(0xFF8799A8);
+
   // --- Spacing / radius ----------------------------------------------
   static const r = 10.0; // pangkaraniwang radius — matigas, hindi bilog
   static const rSm = 6.0;
+  static const roomRadius = 22.0;
+  static const roomRadiusSm = 15.0;
+
+  // Modern, readable room typography. Android's default sans-serif keeps the
+  // APK lean and renders consistently without adding a font dependency.
+  static const roomTitle = TextStyle(
+    fontSize: 23,
+    fontWeight: FontWeight.w700,
+    letterSpacing: -0.35,
+    color: roomText,
+    height: 1.15,
+  );
+
+  static const roomBody = TextStyle(
+    fontSize: 15,
+    fontWeight: FontWeight.w500,
+    color: roomTextMid,
+    height: 1.35,
+  );
+
+  static const roomCaption = TextStyle(
+    fontSize: 12,
+    fontWeight: FontWeight.w600,
+    color: roomTextLow,
+    height: 1.25,
+  );
 
   // --- Type ----------------------------------------------------------
   // Ang monospace ang nagbibigay ng "instrument readout" na dating.

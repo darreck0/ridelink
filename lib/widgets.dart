@@ -253,7 +253,13 @@ class SignalBars extends StatelessWidget {
 class VoiceMeter extends StatefulWidget {
   final bool active;
   final double level; // 0..1
-  const VoiceMeter({super.key, required this.active, this.level = 0});
+  final Color color;
+  const VoiceMeter({
+    super.key,
+    required this.active,
+    this.level = 0,
+    this.color = RL.green,
+  });
 
   @override
   State<VoiceMeter> createState() => _VoiceMeterState();
@@ -302,7 +308,7 @@ class _VoiceMeterState extends State<VoiceMeter>
               width: _barW,
               height: h,
               decoration: BoxDecoration(
-                color: RL.green,
+                color: widget.color,
                 borderRadius: BorderRadius.circular(1.5),
               ),
             );
@@ -321,7 +327,10 @@ class HudField extends StatefulWidget {
   final TextEditingController controller;
   final String label;
   final String? hint;
+  final IconData? icon;
   final TextCapitalization capitalization;
+  final TextInputAction? textInputAction;
+  final ValueChanged<String>? onSubmitted;
   final bool enabled;
 
   const HudField({
@@ -329,7 +338,10 @@ class HudField extends StatefulWidget {
     required this.controller,
     required this.label,
     this.hint,
+    this.icon,
     this.capitalization = TextCapitalization.none,
+    this.textInputAction,
+    this.onSubmitted,
     this.enabled = true,
   });
 
@@ -358,53 +370,67 @@ class _HudFieldState extends State<HudField> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        HudLabel(widget.label, color: active ? RL.green : RL.textLow),
-        const SizedBox(height: 8),
-        AnimatedContainer(
-          duration: const Duration(milliseconds: 140),
-          decoration: BoxDecoration(
-            color: RL.surface,
-            borderRadius: BorderRadius.circular(RL.r),
-            border: Border.all(
-              color: active ? RL.green : RL.line,
-              width: active ? 1.5 : 1,
-            ),
+        Text(
+          widget.label,
+          style: RL.roomCaption.copyWith(
+            color: active ? RL.cyanBright : RL.roomTextMid,
+            fontWeight: FontWeight.w700,
           ),
-          child: Row(
-            children: [
-              // Patayong marker sa gilid — nagliliwanag kapag naka-focus.
-              Container(
-                width: 3,
-                height: 26,
-                margin: const EdgeInsets.only(left: 12, right: 10),
-                decoration: BoxDecoration(
-                  color: active ? RL.green : RL.line,
-                  borderRadius: BorderRadius.circular(2),
-                ),
+        ),
+        const SizedBox(height: 7),
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          decoration: BoxDecoration(
+            color: RL.roomBgDeep.withValues(alpha: 0.58),
+            borderRadius: BorderRadius.circular(RL.roomRadiusSm),
+            border: Border.all(
+              color: active
+                  ? RL.cyan.withValues(alpha: 0.78)
+                  : RL.roomBorder.withValues(alpha: 0.75),
+              width: active ? 1.4 : 1,
+            ),
+            boxShadow: active
+                ? [
+                    BoxShadow(
+                      color: RL.cyan.withValues(alpha: 0.08),
+                      blurRadius: 16,
+                    ),
+                  ]
+                : null,
+          ),
+          child: TextField(
+            controller: widget.controller,
+            focusNode: _focus,
+            enabled: widget.enabled,
+            textCapitalization: widget.capitalization,
+            textInputAction: widget.textInputAction,
+            onSubmitted: widget.onSubmitted,
+            style: RL.roomBody.copyWith(
+              color: RL.roomText,
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
+            decoration: InputDecoration(
+              isDense: true,
+              border: InputBorder.none,
+              hintText: widget.hint,
+              hintStyle: RL.roomBody.copyWith(color: RL.roomTextLow),
+              prefixIcon: widget.icon == null
+                  ? null
+                  : Icon(
+                      widget.icon,
+                      color: active ? RL.cyan : RL.roomTextLow,
+                      size: 20,
+                    ),
+              prefixIconConstraints: const BoxConstraints(
+                minWidth: 48,
+                minHeight: 52,
               ),
-              Expanded(
-                child: TextField(
-                  controller: widget.controller,
-                  focusNode: _focus,
-                  enabled: widget.enabled,
-                  textCapitalization: widget.capitalization,
-                  style: const TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w600,
-                    color: RL.textHi,
-                    letterSpacing: 0.3,
-                  ),
-                  decoration: InputDecoration(
-                    isDense: true,
-                    border: InputBorder.none,
-                    hintText: widget.hint,
-                    hintStyle: const TextStyle(color: RL.textLow, fontSize: 16),
-                    contentPadding: const EdgeInsets.symmetric(vertical: 16),
-                  ),
-                ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 15,
+                vertical: 16,
               ),
-              const SizedBox(width: 12),
-            ],
+            ),
           ),
         ),
       ],
@@ -433,74 +459,84 @@ class HudButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final enabled = onPressed != null && !busy;
-    return GestureDetector(
-      onTap: enabled ? onPressed : null,
+    final foreground = enabled ? RL.roomBgDeep : RL.roomTextLow;
+    return Semantics(
+      button: true,
+      enabled: enabled,
+      label: busy ? 'Joining voice room' : label,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 160),
-        height: 62,
+        duration: const Duration(milliseconds: 180),
+        height: 58,
         decoration: BoxDecoration(
-          color: enabled ? RL.green : RL.surfaceAlt,
-          borderRadius: BorderRadius.circular(RL.r),
+          gradient: enabled
+              ? const LinearGradient(
+                  colors: [RL.cyanBright, RL.cyan],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                )
+              : null,
+          color: enabled ? null : RL.roomSurfaceRaised,
+          borderRadius: BorderRadius.circular(15),
           border: Border.all(
-            color: enabled ? RL.green : RL.line,
-            width: 1.5,
+            color:
+                enabled ? RL.cyanBright.withValues(alpha: 0.45) : RL.roomBorder,
           ),
           boxShadow: enabled
               ? [
                   BoxShadow(
-                    color: RL.green.withValues(alpha: 0.28),
-                    blurRadius: 26,
-                    spreadRadius: -6,
-                    offset: const Offset(0, 6),
+                    color: RL.cyan.withValues(alpha: 0.24),
+                    blurRadius: 24,
+                    offset: const Offset(0, 8),
                   ),
                 ]
               : null,
         ),
-        child: Center(
-          child: busy
-              ? Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation(RL.textMid),
-                      ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: enabled ? onPressed : null,
+            borderRadius: BorderRadius.circular(15),
+            child: Center(
+              child: busy
+                  ? Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.2,
+                            color: RL.roomTextMid,
+                          ),
+                        ),
+                        const SizedBox(width: 11),
+                        Text(
+                          'Joining room…',
+                          style: RL.roomBody.copyWith(
+                            color: RL.roomTextMid,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    )
+                  : Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          label,
+                          style: RL.roomBody.copyWith(
+                            color: foreground,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        if (icon != null) ...[
+                          const SizedBox(width: 10),
+                          Icon(icon, size: 21, color: foreground),
+                        ],
+                      ],
                     ),
-                    const SizedBox(width: 14),
-                    Text(
-                      'CONNECTING',
-                      style: RL.action.copyWith(
-                        color: RL.textMid,
-                        fontSize: 15,
-                      ),
-                    ),
-                  ],
-                )
-              : Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (icon != null) ...[
-                      Icon(
-                        icon,
-                        size: 21,
-                        color: enabled
-                            ? const Color(0xFF04140C)
-                            : RL.textLow,
-                      ),
-                      const SizedBox(width: 12),
-                    ],
-                    Text(
-                      label,
-                      style: RL.action.copyWith(
-                        color:
-                            enabled ? const Color(0xFF04140C) : RL.textLow,
-                      ),
-                    ),
-                  ],
-                ),
+            ),
+          ),
         ),
       ),
     );
@@ -516,46 +552,75 @@ class ModeSwitch<T> extends StatelessWidget {
   final List<(T value, String label)> options;
   final T selected;
   final ValueChanged<T> onChanged;
+  final bool enabled;
 
   const ModeSwitch({
     super.key,
     required this.options,
     required this.selected,
     required this.onChanged,
+    this.enabled = true,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(4),
+      padding: const EdgeInsets.all(5),
       decoration: BoxDecoration(
-        color: RL.surface,
-        borderRadius: BorderRadius.circular(RL.r),
-        border: Border.all(color: RL.line),
+        color: RL.roomBgDeep.withValues(alpha: 0.72),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: RL.roomBorder.withValues(alpha: 0.7)),
       ),
       child: Row(
         children: options.map((o) {
           final on = o.$1 == selected;
           return Expanded(
-            child: GestureDetector(
-              onTap: () => onChanged(o.$1),
-              behavior: HitTestBehavior.opaque,
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 160),
-                height: 44,
-                decoration: BoxDecoration(
-                  color: on ? RL.greenDim : Colors.transparent,
-                  borderRadius: BorderRadius.circular(RL.rSm),
-                  border: Border.all(
-                    color: on ? RL.green : Colors.transparent,
-                  ),
-                ),
-                child: Center(
-                  child: Text(
-                    o.$2,
-                    style: RL.label.copyWith(
-                      fontSize: 12,
-                      color: on ? RL.green : RL.textMid,
+            child: Semantics(
+              button: true,
+              selected: on,
+              enabled: enabled,
+              label: o.$2,
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: enabled ? () => onChanged(o.$1) : null,
+                  borderRadius: BorderRadius.circular(14),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 180),
+                    height: 50,
+                    decoration: BoxDecoration(
+                      gradient: on
+                          ? const LinearGradient(
+                              colors: [Color(0xFF174A48), Color(0xFF123936)],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            )
+                          : null,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                        color: on
+                            ? RL.cyan.withValues(alpha: 0.6)
+                            : Colors.transparent,
+                      ),
+                      boxShadow: on
+                          ? [
+                              BoxShadow(
+                                color: RL.cyan.withValues(alpha: 0.10),
+                                blurRadius: 16,
+                                offset: const Offset(0, 4),
+                              ),
+                            ]
+                          : null,
+                    ),
+                    child: Center(
+                      child: Text(
+                        o.$2,
+                        style: RL.roomBody.copyWith(
+                          fontSize: 13,
+                          fontWeight: on ? FontWeight.w700 : FontWeight.w600,
+                          color: on ? RL.cyanBright : RL.roomTextMid,
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -574,72 +639,55 @@ class ModeSwitch<T> extends StatelessWidget {
 // kapag tahimik, buong pula kapag naririnig ka.
 // ---------------------------------------------------------------------------
 
-class _RingPainter extends CustomPainter {
-  final double progress; // 0..1 — gaano karaming tick ang bukas
-  final Color active;
-  final Color idle;
-  final double glow;
+class _PttHaloPainter extends CustomPainter {
+  final Color color;
+  final double pulse;
+  final bool active;
 
-  _RingPainter({
-    required this.progress,
+  _PttHaloPainter({
+    required this.color,
+    required this.pulse,
     required this.active,
-    required this.idle,
-    required this.glow,
   });
-
-  static const _ticks = 44;
 
   @override
   void paint(Canvas canvas, Size size) {
-    final c = Offset(size.width / 2, size.height / 2);
-    final rOuter = size.width / 2 - 2;
-    final rInner = rOuter - 11;
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.shortestSide / 2 - 5;
 
-    // Glow sa likod kapag aktibo.
-    if (glow > 0) {
+    canvas.drawCircle(
+      center,
+      radius,
+      Paint()
+        ..color = (active ? color : RL.roomBorder)
+            .withValues(alpha: active ? 0.28 : 0.35)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.5,
+    );
+
+    if (active) {
       canvas.drawCircle(
-        c,
-        rOuter * (1 + 0.05 * glow),
+        center,
+        radius + 2 + pulse * 5,
         Paint()
-          ..color = active.withValues(alpha: 0.16 * glow)
-          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 18),
-      );
-    }
-
-    // Ang tick ring. Nagsisimula sa itaas, pakanan.
-    for (var i = 0; i < _ticks; i++) {
-      final frac = i / _ticks;
-      // `progress > 0` muna: kung wala, sana walang kahit isang tick na
-      // bukas — kung hindi, sasabit ang tick sa index 0 dahil 0 <= 0.
-      final on = progress > 0 && frac <= progress;
-      final a = -math.pi / 2 + frac * math.pi * 2;
-      final dir = Offset(math.cos(a), math.sin(a));
-      // Bawat ikaapat na tick ay mas mahaba — parang gauge markings.
-      final long = i % 4 == 0;
-      final p1 = c + dir * (long ? rInner - 4 : rInner);
-      final p2 = c + dir * rOuter;
-      canvas.drawLine(
-        p1,
-        p2,
-        Paint()
-          ..color = on ? active : idle
-          ..strokeWidth = long ? 2.4 : 1.6
-          ..strokeCap = StrokeCap.round,
+          ..color = color.withValues(alpha: 0.16 * (1 - pulse))
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 5,
       );
     }
   }
 
   @override
-  bool shouldRepaint(_RingPainter old) =>
-      old.progress != progress || old.active != active || old.glow != glow;
+  bool shouldRepaint(_PttHaloPainter old) =>
+      old.color != color || old.pulse != pulse || old.active != active;
 }
 
 class PttButton extends StatefulWidget {
-  /// `true` = bukas ang mic (naririnig ka).
   final bool live;
-
-  /// Push-to-talk: hawakan para magsalita. Kapag `false`, tap toggle.
   final bool holdMode;
+  final bool busy;
+  final bool connected;
+  final double diameter;
 
   final VoidCallback? onPressStart;
   final VoidCallback? onPressEnd;
@@ -649,6 +697,9 @@ class PttButton extends StatefulWidget {
     super.key,
     required this.live,
     required this.holdMode,
+    this.busy = false,
+    this.connected = true,
+    this.diameter = 154,
     this.onPressStart,
     this.onPressEnd,
     this.onTap,
@@ -660,6 +711,8 @@ class PttButton extends StatefulWidget {
 
 class _PttButtonState extends State<PttButton>
     with SingleTickerProviderStateMixin {
+  bool _pressed = false;
+
   late final AnimationController _c = AnimationController(
     vsync: this,
     duration: const Duration(milliseconds: 1400),
@@ -690,86 +743,165 @@ class _PttButtonState extends State<PttButton>
 
   @override
   Widget build(BuildContext context) {
-    // Pula kapag on air, berde kapag handa, abo kapag naka-mute.
-    final Color accent = widget.live
-        ? RL.red
-        : (widget.holdMode ? RL.green : RL.red);
-    final String top = widget.live
-        ? 'ON AIR'
-        : (widget.holdMode ? 'HOLD' : 'MUTED');
-    final String sub = widget.live
-        ? (widget.holdMode ? 'bitawan para tumigil' : 'naririnig ka')
-        : (widget.holdMode ? 'pindutin at hawakan' : 'pindutin para buksan');
+    final enabled = widget.connected && !widget.busy;
+    final gestureEnabled =
+        widget.connected && (widget.holdMode || !widget.busy);
+    final ready = enabled && widget.holdMode && !widget.live;
+    final accent = widget.live
+        ? RL.cyanBright
+        : ready
+            ? RL.cyan
+            : RL.roomTextLow;
+    final String title;
+    final String helper;
+    final IconData icon;
 
-    return GestureDetector(
-      onTapDown: widget.holdMode ? (_) => widget.onPressStart?.call() : null,
-      onTapUp: widget.holdMode ? (_) => widget.onPressEnd?.call() : null,
-      onTapCancel: widget.holdMode ? () => widget.onPressEnd?.call() : null,
-      onTap: widget.holdMode ? null : widget.onTap,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          AnimatedBuilder(
-            animation: _c,
-            builder: (_, __) {
-              final glow = widget.live ? _c.value : 0.0;
-              return SizedBox(
-                width: 196,
-                height: 196,
-                child: CustomPaint(
-                  painter: _RingPainter(
-                    progress: widget.live ? 1.0 : 0.0,
-                    active: accent,
-                    idle: RL.line,
-                    glow: glow,
-                  ),
-                  child: Center(
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 130),
-                      width: 152,
-                      height: 152,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: widget.live
-                            ? accent.withValues(alpha: 0.16)
-                            : RL.surface,
-                        border: Border.all(
-                          color: widget.live ? accent : RL.lineBright,
-                          width: widget.live ? 2.5 : 1.5,
-                        ),
-                      ),
-                      child: Center(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              widget.live ? Icons.mic : Icons.mic_off,
-                              size: 34,
-                              color: widget.live ? accent : RL.textMid,
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              top,
-                              style: RL.action.copyWith(
-                                fontSize: 19,
-                                color: widget.live ? accent : RL.textHi,
-                              ),
+    if (!widget.connected) {
+      title = 'Disconnected';
+      helper = 'Return to the room to reconnect';
+      icon = Icons.link_off_rounded;
+    } else if (widget.busy) {
+      title = 'Connecting mic';
+      helper = 'One moment';
+      icon = Icons.sync_rounded;
+    } else if (widget.live) {
+      title = widget.holdMode ? 'Transmitting' : 'Mic is live';
+      helper = widget.holdMode ? 'Release to stop' : 'Tap to mute';
+      icon = Icons.mic_rounded;
+    } else if (widget.holdMode) {
+      title = 'Hold to talk';
+      helper = 'Press and hold';
+      icon = Icons.mic_none_rounded;
+    } else {
+      title = 'Muted';
+      helper = 'Tap to unmute';
+      icon = Icons.mic_off_rounded;
+    }
+
+    return Semantics(
+      button: true,
+      enabled: enabled,
+      toggled: widget.live,
+      label: title,
+      hint: helper,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTapDown: gestureEnabled && widget.holdMode
+            ? (_) {
+                setState(() => _pressed = true);
+                widget.onPressStart?.call();
+              }
+            : gestureEnabled
+                ? (_) => setState(() => _pressed = true)
+                : null,
+        onTapUp: gestureEnabled
+            ? (_) {
+                setState(() => _pressed = false);
+                if (widget.holdMode) widget.onPressEnd?.call();
+              }
+            : null,
+        onTapCancel: gestureEnabled
+            ? () {
+                setState(() => _pressed = false);
+                if (widget.holdMode) widget.onPressEnd?.call();
+              }
+            : null,
+        onTap: gestureEnabled && !widget.holdMode ? widget.onTap : null,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            AnimatedBuilder(
+              animation: _c,
+              builder: (_, __) {
+                final pulse = widget.live ? _c.value : 0.0;
+                return SizedBox(
+                  width: widget.diameter,
+                  height: widget.diameter,
+                  child: CustomPaint(
+                    painter: _PttHaloPainter(
+                      color: accent,
+                      pulse: pulse,
+                      active: widget.live,
+                    ),
+                    child: Center(
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 100),
+                        curve: Curves.easeOut,
+                        width: widget.diameter - (_pressed ? 28 : 22),
+                        height: widget.diameter - (_pressed ? 28 : 22),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: LinearGradient(
+                            colors: widget.live
+                                ? const [
+                                    Color(0xFF237E70),
+                                    Color(0xFF14544D),
+                                  ]
+                                : ready
+                                    ? const [
+                                        Color(0xFF16413F),
+                                        Color(0xFF112E32),
+                                      ]
+                                    : const [
+                                        Color(0xFF1A252E),
+                                        Color(0xFF131C24),
+                                      ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          border: Border.all(
+                            color: widget.live
+                                ? accent.withValues(alpha: 0.95)
+                                : ready
+                                    ? RL.cyan.withValues(alpha: 0.42)
+                                    : RL.roomBorder,
+                            width: widget.live ? 2 : 1,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: widget.live
+                                  ? accent.withValues(alpha: 0.28)
+                                  : Colors.black.withValues(alpha: 0.25),
+                              blurRadius: widget.live ? 30 : 18,
+                              offset: const Offset(0, 10),
                             ),
                           ],
+                        ),
+                        child: Center(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                icon,
+                                size: widget.diameter < 140 ? 28 : 32,
+                                color: widget.live || ready
+                                    ? accent
+                                    : RL.roomTextMid,
+                              ),
+                              const SizedBox(height: 7),
+                              Text(
+                                title,
+                                style: RL.roomBody.copyWith(
+                                  fontSize: widget.diameter < 140 ? 14 : 16,
+                                  fontWeight: FontWeight.w700,
+                                  color: widget.live || ready
+                                      ? accent
+                                      : RL.roomText,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-              );
-            },
-          ),
-          const SizedBox(height: 14),
-          Text(
-            sub.toUpperCase(),
-            style: RL.label.copyWith(fontSize: 10, color: RL.textLow),
-          ),
-        ],
+                );
+              },
+            ),
+            const SizedBox(height: 12),
+            Text(helper, style: RL.roomCaption),
+          ],
+        ),
       ),
     );
   }
@@ -788,30 +920,44 @@ class HudAlert extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: RL.redDim,
-        borderRadius: BorderRadius.circular(RL.r),
-        border: Border.all(color: RL.red.withValues(alpha: 0.5)),
+        color: RL.red.withValues(alpha: 0.09),
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(color: RL.red.withValues(alpha: 0.24)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.warning_amber_rounded, color: RL.red, size: 20),
+          Container(
+            width: 34,
+            height: 34,
+            decoration: BoxDecoration(
+              color: RL.red.withValues(alpha: 0.12),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.error_outline_rounded,
+              color: RL.red,
+              size: 19,
+            ),
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'HINDI NAKAKONEKTA',
-                  style: RL.label.copyWith(color: RL.red, fontSize: 10),
+                  'Couldn’t connect',
+                  style: RL.roomBody.copyWith(
+                    color: const Color(0xFFFFA8AE),
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
                 const SizedBox(height: 6),
                 Text(
                   message,
-                  style: const TextStyle(
-                    color: Color(0xFFFFC9CC),
-                    fontSize: 13,
-                    height: 1.45,
+                  style: RL.roomCaption.copyWith(
+                    color: const Color(0xFFFFCDD0),
+                    height: 1.4,
                   ),
                 ),
               ],
