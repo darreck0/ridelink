@@ -22,6 +22,28 @@ import 'package:flutter_background/flutter_background.dart';
 import 'theme.dart';
 import 'widgets.dart';
 
+/// Keeps RideLink on Android's voice-communication route without taking
+/// exclusive audio focus from music and navigation apps.
+final _rideLinkAudioConfiguration = webrtc.AndroidAudioConfiguration(
+  manageAudioFocus: false,
+  androidAudioMode: webrtc.AndroidAudioMode.inCommunication,
+  androidAudioStreamType: webrtc.AndroidAudioStreamType.voiceCall,
+  androidAudioAttributesUsageType:
+      webrtc.AndroidAudioAttributesUsageType.voiceCommunication,
+  androidAudioAttributesContentType:
+      webrtc.AndroidAudioAttributesContentType.speech,
+);
+
+/// Returns Android to its normal media route when the voice room closes.
+final _mediaAudioConfiguration = webrtc.AndroidAudioConfiguration(
+  manageAudioFocus: false,
+  androidAudioMode: webrtc.AndroidAudioMode.normal,
+  androidAudioStreamType: webrtc.AndroidAudioStreamType.music,
+  androidAudioAttributesUsageType: webrtc.AndroidAudioAttributesUsageType.media,
+  androidAudioAttributesContentType:
+      webrtc.AndroidAudioAttributesContentType.music,
+);
+
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setSystemUIOverlayStyle(
@@ -112,9 +134,11 @@ class _ConnectPageState extends State<ConnectPage> {
         throw Exception('Kailangan ng microphone permission.');
       }
 
-      // 2. Android audio -> communication mode (Bluetooth SCO routing)
+      // 2. Keep voice routing, but do not take audio focus from Spotify,
+      //    YouTube, or navigation. Some Bluetooth headsets still switch to
+      //    their lower-bandwidth call profile while the headset mic is active.
       await webrtc.Helper.setAndroidAudioConfiguration(
-        webrtc.AndroidAudioConfiguration.communication,
+        _rideLinkAudioConfiguration,
       );
 
       // 2.5 Foreground service — para tuloy ang audio kahit naka-lock
@@ -186,6 +210,9 @@ class _ConnectPageState extends State<ConnectPage> {
         MaterialPageRoute(builder: (_) => RoomPage(room: room)),
       );
     } catch (e) {
+      await webrtc.Helper.setAndroidAudioConfiguration(
+        _mediaAudioConfiguration,
+      );
       setState(() => _error = e.toString());
     } finally {
       if (mounted) setState(() => _connecting = false);
@@ -452,6 +479,7 @@ class _RoomPageState extends State<RoomPage> {
 
     _listener.on<RoomDisconnectedEvent>((e) {
       if (!mounted) return;
+      webrtc.Helper.setAndroidAudioConfiguration(_mediaAudioConfiguration);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           behavior: SnackBarBehavior.floating,
@@ -504,6 +532,9 @@ class _RoomPageState extends State<RoomPage> {
     try {
       await room.disconnect();
     } finally {
+      await webrtc.Helper.setAndroidAudioConfiguration(
+        _mediaAudioConfiguration,
+      );
       if (mounted) setState(() => _disconnecting = false);
     }
   }

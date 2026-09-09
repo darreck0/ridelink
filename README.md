@@ -134,6 +134,7 @@ The current release build still uses a development signing setup and is intended
 - **No application authentication is implemented yet.** Room access is not suitable for public production use.
 - **Connected room time still consumes service quota during silence.** Riders should end the call after every ride.
 - **Voice encoding can be optimized further** for speech-focused helmet audio and lower data usage.
+- **Bluetooth headset profile switching is hardware-dependent.** RideLink no longer requests exclusive Android audio focus, so media apps can keep their normal volume. However, many Bluetooth headsets must switch from stereo A2DP music to the lower-bandwidth call profile while their microphone is active.
 - **Production branding and signing are pending**, including a custom launcher icon and release keystore.
 
 ## Roadmap
