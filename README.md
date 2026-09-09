@@ -1,120 +1,155 @@
 # RideLink
 
-**Group voice para sa mga rider.** Isang push-to-talk / open-mic na intercom na tumatakbo sa mobile data sa halip na sa short-range na radyo — kaya walang limitasyon sa layo hangga't may signal.
+**A mobile group intercom built for motorcycle riders.** RideLink provides push-to-talk and open-mic voice communication over mobile data, allowing a riding group to stay connected beyond the range of traditional Bluetooth intercoms.
 
-> **Status: Prototype 01.** Gumagana at nasusubukan na sa totoong byahe, pero hindi pa handa sa publiko — tignan ang [Mga kilalang limitasyon](#mga-kilalang-limitasyon).
+> **Project status: Active prototype.** The core room, voice, background-audio, and rider-status flows are working and ready for real-world ride testing. Review the [current limitations](#current-limitations) before using it as a production service.
 
 <table>
   <tr>
-    <td width="25%"><img src="docs/screenshots/connect.png" alt="Connect screen"></td>
-    <td width="25%"><img src="docs/screenshots/room-idle.png" alt="Room, tahimik"></td>
-    <td width="25%"><img src="docs/screenshots/room-onair.png" alt="Room, on air"></td>
-    <td width="25%"><img src="docs/screenshots/room-muted.png" alt="Room, naka-mute"></td>
+    <td width="25%"><img src="docs/screenshots/connect-premium.png" alt="Premium RideLink connect screen"></td>
+    <td width="25%"><img src="docs/screenshots/room-quiet-premium.png" alt="Voice room in quiet hold-to-talk state"></td>
+    <td width="25%"><img src="docs/screenshots/room-transmitting-premium.png" alt="Voice room actively transmitting"></td>
+    <td width="25%"><img src="docs/screenshots/room-muted-premium.png" alt="Voice room with open mic muted"></td>
   </tr>
   <tr>
     <td align="center"><sub>Connect</sub></td>
-    <td align="center"><sub>Tahimik</sub></td>
-    <td align="center"><sub>On air</sub></td>
-    <td align="center"><sub>Naka-mute</sub></td>
+    <td align="center"><sub>Hold to Talk</sub></td>
+    <td align="center"><sub>Transmitting</sub></td>
+    <td align="center"><sub>Muted</sub></td>
   </tr>
 </table>
 
 ---
 
-## Ano ang ginagawa nito
+## Highlights
 
-- **Group voice room** — sabay-sabay na usapan, hindi one-to-one
-- **Dalawang mode** — hold-to-talk (mic bukas habang pinipindot) at open mic (tuloy-tuloy)
-- **Bluetooth headset routing** — dumadaan sa helmet headset, hindi sa loudspeaker
-- **Tuloy sa background** — foreground service para hindi maputol kapag naka-lock ang screen o nasa Maps
-- **Live na status** — kung sino ang nagsasalita, sino ang naka-mute, at gaano kalakas ang signal ng bawat isa
+- **Group voice rooms** for multiple riders instead of one-to-one calls
+- **Hold to Talk and Open Mic modes** for different riding situations
+- **Bluetooth headset routing** designed for helmet intercoms and headsets
+- **Background audio support** through an Android foreground service
+- **Live rider presence** with microphone, speaking, connection, and signal states
+- **Data-conscious voice transport** with discontinuous transmission enabled during silence
+- **Responsive Android UI** tested on Pixel 8 and compact 360 × 640 layouts
+- **Safe-area-aware controls** with scrolling support on smaller screens
 
-## Disenyo
+## Latest UI enhancements
 
-Ang UI ay ginawa para sa isang taong **naka-helmet, may gloves, at hindi puwedeng tumitig sa screen.**
+- Redesigned the connect screen with a premium deep-navy visual system
+- Added modern rounded form fields, clear focus states, and a responsive layout
+- Rebuilt the voice room with compact rider cards and improved status hierarchy
+- Added quiet-room visualization and active-transmission feedback
+- Added a circular microphone control with ready, muted, connecting, disconnected, and transmitting states
+- Added an animated pulse ring while transmitting
+- Improved rider-name handling, multiple-rider scrolling, contrast, and touch targets
+- Added clearer signal strength, microphone state, and active-speaker indicators
+- Restricted red to end-call, disconnection, and danger states
+- Added polished loading, error, and disconnect feedback
 
-**Ang kulay ay may kahulugan, hindi dekorasyon.** Isa lang ang tuntunin at hindi ito nagbabago kahit saang screen:
+## Design direction
 
-| Kulay | Kahulugan |
+RideLink is designed for quick, glanceable use by riders wearing a helmet and gloves. The interface uses deep navy and charcoal surfaces, high-contrast typography, large touch targets, restrained technical details, and teal communication states.
+
+| Color | Meaning |
 |---|---|
-| 🟦 Teal | Konektado, handang magsalita, o aktibong nagta-transmit |
-| 🔴 Pula | End call, disconnected, at ibang danger state |
-| ⚪ Gray | Tahimik, naka-mute, o hindi aktibong control |
+| Teal | Connected, ready, or actively transmitting |
+| Red | End call, disconnected, or danger |
+| Gray | Quiet, muted, or inactive |
 
-Kapag **matingkad na teal at may pulse ring ang microphone button, nagta-transmit ka.** Kapag neutral gray, tahimik o naka-mute ang mic. Hindi mo kailangang basahin ang teksto para malaman ang kasalukuyang state.
+The brightest state is reserved for active transmission. A teal microphone button with a pulse ring means the rider is currently sending audio.
 
-Ang interface ay gumagamit ng deep navy surfaces, malinaw na typography, malalaking touch target, at restrained technical details para madaling gamitin habang naka-motor nang hindi nagmumukhang gaming o hacker UI.
+Shared design tokens are defined in [`lib/theme.dart`](lib/theme.dart), while reusable controls are located in [`lib/widgets.dart`](lib/widgets.dart).
 
-Nasa [`lib/theme.dart`](lib/theme.dart) ang lahat ng token; nasa [`lib/widgets.dart`](lib/widgets.dart) ang mga bahagi.
+## Project structure
 
-## Estruktura
-
-```
+```text
 lib/
-  main.dart      Dalawang screen (Connect, Room) at ang voice logic
-  theme.dart     Design tokens — kulay, type, spacing
-  widgets.dart   Reusable UI components — fields, meters, mode switch, PTT button
+  main.dart      Connect and voice-room screens plus LiveKit integration
+  theme.dart     Shared colors, typography, radii, and theme values
+  widgets.dart   Reusable fields, status meters, mode switch, and PTT control
 test/
   widget_test.dart
 docs/screenshots/
 ```
 
-## Pagpapatakbo
+## Running the app
 
-Kailangan: Flutter 3.47+ at isang [LiveKit Cloud](https://cloud.livekit.io) project.
+Requirements:
+
+- Flutter 3.47 or newer
+- An Android device or emulator
+- A LiveKit Cloud project and Sandbox ID for prototype testing
 
 ```bash
 flutter pub get
 flutter run
 ```
 
-Sa Connect screen, ilagay ang **Sandbox ID** mula sa LiveKit dashboard mo, isang **room name** (dapat pareho sa lahat ng phone), at isang **callsign** (dapat magkaiba bawat phone).
+On the Connect screen, enter:
 
-Para hindi na ito i-type kada bukas, gumawa ng lokal na config — naka-gitignore ito, kaya hindi napupunta sa repo ang Sandbox ID:
+1. Your LiveKit Sandbox ID
+2. A room name shared by all riders
+3. A unique rider callsign
+
+To keep the Sandbox ID outside the source code, create a local configuration file:
 
 ```bash
-cp dev.example.json dev.json     # tapos punan ang Sandbox ID mo
+cp dev.example.json dev.json
 flutter run --dart-define-from-file=dev.json
 ```
 
-Sinasadyang wala sa source ang Sandbox ID. Sinumang may hawak nito ay makakasali sa kahit anong room mo o makakaubos ng quota mo — walang authentication ang sandbox token server.
+`dev.json` is ignored by Git and must never be committed. The prototype sandbox flow does not provide application-level authentication, so do not expose your Sandbox ID publicly.
 
-### Paggawa ng APK
+## Quality checks
 
 ```bash
-flutter build apk --release              # universal, ~85 MB
-flutter build apk --release --split-per-abi   # bawat ABI, ~22-35 MB
+dart format lib test
+flutter analyze
+flutter test
 ```
 
-Ang universal ang mas madali kung ipapamigay sa iba't ibang phone. **Wag maghalo** ng universal at split sa iisang grupo — magkaiba ang `versionCode` nila, at ituturing ng Android na downgrade ang paglipat.
+The widget tests cover the connect screen validation and the primary microphone visual states.
 
-Ang release build ay pinipirmahan pa rin ng **debug key** — pang-test lang ito, hindi pang-Play Store. Kapag lumipat sa tunay na keystore, kailangang mag-uninstall muna ang lahat bago mag-install ulit.
+## Building an Android APK
 
-## Mga kilalang limitasyon
+Universal APK:
 
-Ito ang mga totoong hadlang, hindi mga maliliit na bug.
+```bash
+flutter build apk --release
+```
 
-**Hindi mahawakan ang phone habang nagmamaneho.** Ang hold-to-talk ay nangangailangan ng paghawak sa screen — imposible habang may hawak na manibela. Ang tamang solusyon ay ang **media button ng Bluetooth helmet headset** (via MediaSession, gumagana kahit patay ang screen) o isang handlebar remote. Hanggang magawa yun, ang open mic ang tanging praktikal na mode habang umaandar.
+Smaller architecture-specific APKs:
 
-**Deprecated na ang LiveKit Sandbox.** Ang [dokumentasyon](https://docs.livekit.io/home/cloud/sandbox/) mismo ang nagsasabi na *"some functionality may already be removed or disabled."* Ang buong pagkakakonekta ng app ay nakasandal dito. Ang kapalit ay isang sariling token endpoint — kailangan din ito para sa seguridad at para sa self-hosting.
+```bash
+flutter build apk --release --split-per-abi
+```
 
-**Walang authentication.** Ang sandbox token server ay nagbibigay ng token sa kahit sino: *"any frontend app can request a token with any permissions and no restrictions."* Sinumang may Sandbox ID ay makakasali sa kahit anong room.
+The universal APK is easier to distribute across different Android devices. Avoid switching between universal and split APK variants on the same device when their generated version codes differ.
 
-**Mataas ang bitrate para sa layunin.** Hindi naka-set ang `encoding`, kaya `presetMusic` (48 kbps) ang default, at doble pa dahil sa RED. Sa Bluetooth helmet headset na 8–16 kHz lang ang SCO link, hindi naman naririnig ang dagdag na detalye. Ang `presetSpeech` (24 kbps) ay halos kalahati ang data nang walang mararamdamang pagkakaiba.
+The current release build still uses a development signing setup and is intended for testing, not Play Store distribution.
 
-**Nauubos ang quota habang tahimik.** Ang LiveKit ay bumibilang ng **oras na nakakonekta**, hindi ng oras na may nagsasalita. Isang taong nakalimutang mag-end call ay patuloy na kumakain ng quota ng buong grupo.
+## Current limitations
 
-**Default pa ang app icon.** Flutter logo pa rin ang lalabas sa launcher.
+- **On-screen push-to-talk is not hands-free.** While riding, Open Mic is currently the practical option. Bluetooth media-button or handlebar-remote support is planned.
+- **The app uses the LiveKit sandbox connection flow.** A production deployment needs a secure authenticated token endpoint.
+- **No application authentication is implemented yet.** Room access is not suitable for public production use.
+- **Connected room time still consumes service quota during silence.** Riders should end the call after every ride.
+- **Voice encoding can be optimized further** for speech-focused helmet audio and lower data usage.
+- **Production branding and signing are pending**, including a custom launcher icon and release keystore.
 
-## Susunod
+## Roadmap
 
-- [ ] Sariling token endpoint (Laravel) — papalit sa deprecated na sandbox, nagdadala ng authentication
-- [ ] Media button ng Bluetooth headset para sa hands-free na PTT
-- [ ] `presetSpeech` na encoding
-- [ ] Auto-disconnect kapag matagal nang tahimik, para hindi masayang ang quota
-- [ ] Sariling app icon
-- [ ] Self-hosted LiveKit server kapag lumaki na ang gamit
+- [ ] Secure Laravel token endpoint with authenticated room access
+- [ ] Bluetooth headset media-button support for hands-free push-to-talk
+- [ ] Speech-optimized audio encoding
+- [ ] Automatic idle-room disconnect to reduce quota usage
+- [ ] Custom RideLink launcher icon and production signing
+- [ ] Self-hosted LiveKit deployment option for larger groups
+- [ ] Expanded device and real-world long-ride testing
 
-## Ginamit
+## Technology
 
-[Flutter](https://flutter.dev) · [LiveKit](https://livekit.io) (WebRTC SFU) · [flutter_webrtc](https://pub.dev/packages/flutter_webrtc) · [permission_handler](https://pub.dev/packages/permission_handler) · [flutter_background](https://pub.dev/packages/flutter_background)
+[Flutter](https://flutter.dev) · [LiveKit](https://livekit.io) · [WebRTC](https://webrtc.org) · [permission_handler](https://pub.dev/packages/permission_handler) · [flutter_background](https://pub.dev/packages/flutter_background)
+
+## Safety note
+
+Configure the app before starting a ride. Do not operate a phone or on-screen push-to-talk control while the motorcycle is moving. Use a properly mounted device and a compatible helmet headset.
