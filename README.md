@@ -6,7 +6,7 @@
 
 <table>
   <tr>
-    <td width="25%"><img src="docs/screenshots/connect-premium.png" alt="Premium RideLink connect screen"></td>
+    <td width="25%"><img src="docs/screenshots/connect-public.png" alt="Premium RideLink connect screen with private credentials hidden"></td>
     <td width="25%"><img src="docs/screenshots/room-quiet-premium.png" alt="Voice room in quiet hold-to-talk state"></td>
     <td width="25%"><img src="docs/screenshots/room-transmitting-premium.png" alt="Voice room actively transmitting"></td>
     <td width="25%"><img src="docs/screenshots/room-muted-premium.png" alt="Voice room with open mic muted"></td>
